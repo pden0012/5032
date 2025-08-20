@@ -31,8 +31,11 @@
               id="username"
               v-model="formData.username"
               placeholder="Enter your username"
+              @blur="() => validateName(true)"
+              @input="() => validateName(false)"
             />
             <!-- form-control = bootstrap's magic style. v-model = live sync with formData -->
+            <div v-if="errors.username" class="text-danger">{{ errors.username }}</div>
           </div>
 
           <!-- Password -->
@@ -44,8 +47,11 @@
               id="password"
               v-model="formData.password"
               placeholder="Enter a password"
+              @blur="() => validatePassword(true)"
+              @input="() => validatePassword(false)"
             />
             <!-- type=password = hides the text, duh -->
+            <div v-if="errors.password" class="text-danger">{{ errors.password }}</div>
           </div>
 
           <!-- Australian Resident -->
@@ -56,10 +62,12 @@
               class="form-check-input"
               id="isAustralian"
               v-model="formData.isAustralian"
+              @change="() => validateResident(true)"
             />
             <label class="form-check-label" for="isAustralian">
               Australian Resident?
             </label>
+            <div v-if="errors.resident" class="text-danger">{{ errors.resident }}</div>
           </div>
 
           <!-- Reason -->
@@ -71,20 +79,29 @@
               rows="3"
               v-model="formData.reason"
               placeholder="Tell us why you join"
+              @blur="() => validateReason(true)"
+              @input="() => validateReason(false)"
             ></textarea>
             <!-- textarea = bigger box, rows=3 = not too tall -->
+            <div v-if="errors.reason" class="text-danger">{{ errors.reason }}</div>
           </div>
 
           <!-- Gender -->
           <div class="mb-4">
             <label for="gender" class="form-label">Gender</label>
-            <select class="form-select" id="gender" v-model="formData.gender">
+            <select 
+              class="form-select" 
+              id="gender" 
+              v-model="formData.gender"
+              @change="() => validateGender(true)"
+            >
               <option disabled value="">Select gender</option>
               <option>Female</option>
               <option>Male</option>
               <option>Other</option>
             </select>
             <!-- form-select = bootstrap dropdown styling -->
+            <div v-if="errors.gender" class="text-danger">{{ errors.gender }}</div>
           </div>
 
           <!-- buttons row -->
@@ -101,7 +118,7 @@
         <div class="row mt-5" v-if="submittedCards.length">
           <!-- only show this if there's something inside submittedCards -->
           <div class="d-flex flex-wrap justify-content-start">
-            <!-- flex-wrap = so cards don’t squeeze, they wrap nicely -->
+            <!-- flex-wrap = so cards don't squeeze, they wrap nicely -->
             <div v-for="(card, index) in submittedCards" :key="index" class="card m-2" style="width: 18rem;">
               <!-- loop all submitted data and make a lil card for each one -->
               <div class="card-header">User Information</div>
@@ -135,12 +152,98 @@ const formData = ref({
   gender: ''         // select dropdown
 })
 
+// 3.2 定义errors对象来存储所有表单错误
+const errors = ref({
+  username: null,
+  password: null,
+  resident: null,
+  gender: null,
+  reason: null
+})
+
 // submittedCards = array of all submissions (cards will be made from this)
 const submittedCards = ref([])
 
+// 3.3 验证用户名函数
+const validateName = (blur) => {
+  if (formData.value.username.length < 3) {
+    if (blur) errors.value.username = "Name must be at least 3 characters"
+  } else {
+    errors.value.username = null
+  }
+}
+
+// 3.7 验证密码函数（复杂验证）
+const validatePassword = (blur) => {
+  const password = formData.value.password
+  const minLength = 8
+  const hasUppercase = /[A-Z]/.test(password)
+  const hasLowercase = /[a-z]/.test(password)
+  const hasNumber = /\d/.test(password)
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password)
+
+  if (password.length < minLength) {
+    if (blur) errors.value.password = `Password must be at least ${minLength} characters`
+  } else if (!hasUppercase) {
+    if (blur) errors.value.password = "Password must contain at least one uppercase letter"
+  } else if (!hasLowercase) {
+    if (blur) errors.value.password = "Password must contain at least one lowercase letter"
+  } else if (!hasNumber) {
+    if (blur) errors.value.password = "Password must contain at least one number"
+  } else if (!hasSpecialChar) {
+    if (blur) errors.value.password = "Password must contain at least one special character"
+  } else {
+    errors.value.password = null
+  }
+}
+
+// 3.11 验证澳大利亚居民状态
+const validateResident = (blur) => {
+  if (!formData.value.isAustralian) {
+    if (blur) errors.value.resident = "You must confirm Australian residency to proceed"
+  } else {
+    errors.value.resident = null
+  }
+}
+
+// 3.11 验证性别选择
+const validateGender = (blur) => {
+  if (!formData.value.gender || formData.value.gender === '') {
+    if (blur) errors.value.gender = "Please select your gender"
+  } else {
+    errors.value.gender = null
+  }
+}
+
+// 3.11 验证加入理由
+const validateReason = (blur) => {
+  if (formData.value.reason.length < 10) {
+    if (blur) errors.value.reason = "Reason must be at least 10 characters"
+  } else if (formData.value.reason.length > 500) {
+    if (blur) errors.value.reason = "Reason must not exceed 500 characters"
+  } else {
+    errors.value.reason = null
+  }
+}
+
+// 3.5 & 3.9 修改提交表单函数
 const submitForm = () => {
-  // basically just copy whatever’s inside formData and push it into submittedCards
-  submittedCards.value.push({ ...formData.value })
+  // 验证所有字段
+  validateName(true)
+  validatePassword(true)
+  validateResident(true)
+  validateGender(true)
+  validateReason(true)
+
+  // 检查是否有任何错误
+  if (!errors.value.username && 
+      !errors.value.password && 
+      !errors.value.resident && 
+      !errors.value.gender && 
+      !errors.value.reason) {
+    // 如果没有错误，提交表单
+    submittedCards.value.push({ ...formData.value })
+  }
 }
 
 const clearForm = () => {
@@ -152,6 +255,16 @@ const clearForm = () => {
     reason: '',
     gender: ''
   }
+  
+  // 清除所有错误消息
+  errors.value = {
+    username: null,
+    password: null,
+    resident: null,
+    gender: null,
+    reason: null
+  }
+  
   // if u also wanna wipe all cards, just uncomment below
   // submittedCards.value = []
 }
