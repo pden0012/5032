@@ -152,36 +152,45 @@ const formData = ref({
   gender: ''         // select dropdown
 })
 
-// 3.2 定义errors对象来存储所有表单错误
+// 这个对象用来存放错误信息，开始都是null（没有错误）
+// 当用户输入有问题时，我们就在这里放错误消息
 const errors = ref({
-  username: null,
-  password: null,
-  resident: null,
-  gender: null,
-  reason: null
+  username: null,    // 用户名错误信息
+  password: null,    // 密码错误信息
+  resident: null,    // 居民身份错误信息
+  gender: null,      // 性别错误信息
+  reason: null       // 理由错误信息
 })
 
 // submittedCards = array of all submissions (cards will be made from this)
 const submittedCards = ref([])
 
-// 3.3 验证用户名函数
+// 检查用户名是否合法的函数
+// blur = true 表示用户点击了别的地方（失去焦点）
+// blur = false 表示用户正在输入
 const validateName = (blur) => {
+  // 如果用户名少于3个字符就不行
   if (formData.value.username.length < 3) {
+    // 只有在失去焦点时才显示错误，避免用户正在输入时就报错
     if (blur) errors.value.username = "Name must be at least 3 characters"
   } else {
+    // 用户名合格，清除错误信息
     errors.value.username = null
   }
 }
 
-// 3.7 验证密码函数（复杂验证）
+// 检查密码是否够强的函数（这个比较复杂哦）
 const validatePassword = (blur) => {
   const password = formData.value.password
-  const minLength = 8
-  const hasUppercase = /[A-Z]/.test(password)
-  const hasLowercase = /[a-z]/.test(password)
-  const hasNumber = /\d/.test(password)
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password)
+  const minLength = 8  // 密码最少要8个字符
+  
+  // 用正则表达式检查密码里有没有这些东西：
+  const hasUppercase = /[A-Z]/.test(password)    // 大写字母 A-Z
+  const hasLowercase = /[a-z]/.test(password)    // 小写字母 a-z  
+  const hasNumber = /\d/.test(password)          // 数字 0-9
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password)  // 特殊符号
 
+  // 一个一个检查，哪里不对就提示哪里
   if (password.length < minLength) {
     if (blur) errors.value.password = `Password must be at least ${minLength} characters`
   } else if (!hasUppercase) {
@@ -193,70 +202,82 @@ const validatePassword = (blur) => {
   } else if (!hasSpecialChar) {
     if (blur) errors.value.password = "Password must contain at least one special character"
   } else {
+    // 所有条件都满足，密码合格！
     errors.value.password = null
   }
 }
 
-// 3.11 验证澳大利亚居民状态
+// 检查是否勾选了澳大利亚居民
 const validateResident = (blur) => {
+  // 如果没有勾选复选框就不行
   if (!formData.value.isAustralian) {
     if (blur) errors.value.resident = "You must confirm Australian residency to proceed"
   } else {
+    // 勾选了，没问题
     errors.value.resident = null
   }
 }
 
-// 3.11 验证性别选择
+// 检查是否选择了性别
 const validateGender = (blur) => {
+  // 如果没选或者是空的就不行
   if (!formData.value.gender || formData.value.gender === '') {
     if (blur) errors.value.gender = "Please select your gender"
   } else {
+    // 选了性别，OK！
     errors.value.gender = null
   }
 }
 
-// 3.11 验证加入理由
+// 检查加入理由写得够不够
 const validateReason = (blur) => {
+  // 理由太短不行（至少10个字符）
   if (formData.value.reason.length < 10) {
     if (blur) errors.value.reason = "Reason must be at least 10 characters"
-  } else if (formData.value.reason.length > 500) {
+  } 
+  // 理由太长也不行（最多500个字符）
+  else if (formData.value.reason.length > 500) {
     if (blur) errors.value.reason = "Reason must not exceed 500 characters"
-  } else {
+  } 
+  // 长度刚好，通过！
+  else {
     errors.value.reason = null
   }
 }
 
-// 3.5 & 3.9 修改提交表单函数
+// 当用户点击提交按钮时执行这个函数
 const submitForm = () => {
-  // 验证所有字段
+  // 先把所有字段都检查一遍（都用true，表示要显示错误）
   validateName(true)
   validatePassword(true)
   validateResident(true)
   validateGender(true)
   validateReason(true)
 
-  // 检查是否有任何错误
+  // 检查是否有任何错误（如果所有错误都是null就表示没问题）
   if (!errors.value.username && 
       !errors.value.password && 
       !errors.value.resident && 
       !errors.value.gender && 
       !errors.value.reason) {
-    // 如果没有错误，提交表单
+    // 太好了！没有错误，可以提交表单，把数据加到卡片列表里
     submittedCards.value.push({ ...formData.value })
   }
+  // 如果有错误，什么都不做，让用户看到错误信息去修改
 }
 
+// 当用户点击清空按钮时执行这个函数
 const clearForm = () => {
-  // reset form back to empty
+  // 把表单数据全部重置为空
   formData.value = {
-    username: '',
-    password: '',
-    isAustralian: false,
-    reason: '',
-    gender: ''
+    username: '',           // 用户名清空
+    password: '',           // 密码清空
+    isAustralian: false,    // 复选框取消勾选
+    reason: '',             // 理由清空
+    gender: ''              // 性别重置为未选择
   }
   
-  // 清除所有错误消息
+  // 把所有错误消息也清掉
   errors.value = {
     username: null,
     password: null,
@@ -265,7 +286,7 @@ const clearForm = () => {
     reason: null
   }
   
-  // if u also wanna wipe all cards, just uncomment below
+  // 如果你想把下面的卡片也一起清掉，取消下面这行的注释
   // submittedCards.value = []
 }
 </script>
