@@ -1,198 +1,167 @@
 <template>
   <div class="home">
-    <!-- hero section with title -->
-    <div class="hero">
-      <h1>Welcome to Youth Mental Health</h1>
-      <p>Support for young people aged 12-25</p>
-      <!-- buttons for actions -->
-      <button @click="showHelp">Get Help Now</button>
+    <h1>Welcome to Youth Mental Health</h1>
+    
+    <!-- 分类筛选 -->
+    <div class="category-filter">
+      <button 
+        v-for="category in categories" 
+        :key="category"
+        @click="filterByCategory(category)"
+        class="filter-btn"
+      >
+        {{ category }}
+      </button>
     </div>
     
-    <!-- features section -->
-    <div class="features">
-      <h2>Our Services</h2>
-      <div class="feature-grid">
-        <div class="feature">
-          <h3>Program Finder</h3>
-          <p>Find mental health programs</p>
-        </div>
-        <div class="feature">
-          <h3>Resources</h3>
-          <p>Articles and videos</p>
-        </div>
+    <!-- 动态资源列表 -->
+    <div class="resources-grid">
+      <div 
+        v-for="resource in filteredResources" 
+        :key="resource.id"
+        class="resource-card"
+      >
+        <h3 class="resource-title">{{ resource.title }}</h3>
+        <p class="resource-description">{{ resource.description }}</p>
+        <span class="resource-category">{{ resource.category }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-// home page component
+import { ref, computed, onMounted } from 'vue'
+import mentalHealthData from '../data/mentalHealthData.json'
+
+// home page component with dynamic data
 export default {
   name: 'Home',
-  // composition API setup
   setup() {
-    // function to show help
-    const showHelp = () => {
-      alert('Emergency: 13 11 14')
+    const resources = ref([])
+    const categories = ref([])
+    const selectedCategory = ref('All')
+    
+    const loadData = () => {
+      resources.value = mentalHealthData.resources
+      categories.value = mentalHealthData.categories
     }
     
+    const filterByCategory = (category) => {
+      selectedCategory.value = category
+    }
+    
+    const filteredResources = computed(() => {
+      if (selectedCategory.value === 'All') {
+        return resources.value
+      }
+      return resources.value.filter(resource => resource.category === selectedCategory.value)
+    })
+    
+    onMounted(() => {
+      loadData()
+    })
+    
     return {
-      showHelp
+      resources,
+      categories,
+      selectedCategory,
+      filteredResources,
+      filterByCategory
     }
   }
 }
 </script>
 
-<style scoped>
-/* home page styles */
+<style>
 .home {
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 2rem;
 }
 
-.hero {
-  text-align: center;
-  padding: 3rem 1rem;
-  background: #f0f0f0;
-  border-radius: 10px;
-  margin-bottom: 2rem;
-}
-
-.hero h1 {
-  font-size: 2rem;
-  color: #333;
-  margin-bottom: 1rem;
-}
-
-.hero p {
-  font-size: 1.1rem;
-  color: #666;
-  margin-bottom: 2rem;
-}
-
-.hero button {
-  background: #e74c3c;
-  color: white;
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s;
-}
-
-.hero button:hover {
-  background: #c0392b;
-}
-
-.features {
-  padding: 2rem 0;
-}
-
-.features h2 {
+.home h1 {
   text-align: center;
   margin-bottom: 2rem;
   color: #333;
 }
 
-.feature-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+.category-filter {
+  display: flex;
+  justify-content: center;
   gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
 }
 
-.feature {
+.filter-btn {
+  background: #ecf0f1;
+  color: #333;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.filter-btn:hover {
+  background: #bdc3c7;
+}
+
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.resource-card {
   background: white;
   padding: 1.5rem;
-  border-radius: 8px;
+  border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  text-align: center;
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: all 0.3s;
 }
 
-.feature:hover {
-  transform: translateY(-2px);
+.resource-card:hover {
+  transform: translateY(-3px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-.feature h3 {
+.resource-title {
   color: #333;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
 }
 
-.feature p {
+.resource-description {
   color: #666;
+  margin-bottom: 1rem;
+  line-height: 1.4;
 }
 
-/* Responsive design - Tablet devices */
+.resource-category {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* responsive design */
 @media (max-width: 768px) {
   .home {
     padding: 1rem;
   }
   
-  .hero {
-    padding: 2rem 1rem;
-  }
-  
-  .hero h1 {
-    font-size: 1.5rem;
-  }
-  
-  .hero p {
-    font-size: 1rem;
-  }
-  
-  .feature-grid {
+  .resources-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-}
-
-/* Responsive design - Mobile devices */
-@media (max-width: 480px) {
-  .home {
-    padding: 0.5rem;
   }
   
-  .hero {
-    padding: 1.5rem 0.5rem;
-    margin-bottom: 1rem;
+  .category-filter {
+    justify-content: center;
   }
   
-  .hero h1 {
-    font-size: 1.3rem;
-  }
-  
-  .hero p {
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .hero button {
-    padding: 0.8rem 1.5rem;
-    font-size: 0.9rem;
-  }
-  
-  .features {
-    padding: 1rem 0;
-  }
-  
-  .features h2 {
-    font-size: 1.3rem;
-    margin-bottom: 1rem;
-  }
-  
-  .feature {
-    padding: 1rem;
-  }
-  
-  .feature h3 {
-    font-size: 1.1rem;
-  }
-  
-  .feature p {
-    font-size: 0.9rem;
+  .filter-btn {
+    margin-bottom: 0.5rem;
   }
 }
 </style>
