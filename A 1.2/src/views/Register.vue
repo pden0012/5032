@@ -24,7 +24,7 @@
         >
         <div v-if="errors.email" class="text-danger">{{ errors.email }}</div>
       </div>
-      
+      <!-- password -->
       <div class="form-group">
         <label>Password:</label>
         <input 
@@ -74,8 +74,8 @@ export default {
     
     // validation functions
     const validateUsername = (blur) => {
-      if (username.value.length < 3) {
-        if (blur) errors.value.username = "Username must be at least 3 characters."
+      if (username.value.length < 7) {
+        if (blur) errors.value.username = "Change the username.Username must be at least 3 characters."
       } else {
         errors.value.username = null
       }
@@ -84,6 +84,7 @@ export default {
     const validateEmail = (blur) => {
       // This is email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      // if the email is not valid, show the error message
       if (!emailRegex.test(email.value)) {
         if (blur) errors.value.email = "Please enter a valid email address"
       } else {
@@ -91,6 +92,7 @@ export default {
       }
     }
     
+    // password validation(simple test)
     const validatePassword = (blur) => {
       // 密码6-10位验证
       // This is password validation

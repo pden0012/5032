@@ -2,8 +2,9 @@
   <div class="home">
     <h1>Welcome to Youth Mental Health</h1>
     
-    <!-- 分类筛选 -->
+    <!-- category filter -->
     <div class="category-filter">
+      <!-- category button -->
       <button 
         v-for="category in categories" 
         :key="category"
@@ -13,14 +14,15 @@
         {{ category }}
       </button>
     </div>
-    
-    <!-- 动态资源列表 -->
+    <!-- dynamic resource list -->
     <div class="resources-grid">
+      <!-- resource card -->
       <div 
         v-for="resource in filteredResources" 
         :key="resource.id"
         class="resource-card"
       >
+      <!-- resource title -->
         <h3 class="resource-title">{{ resource.title }}</h3>
         <p class="resource-description">{{ resource.description }}</p>
         <span class="resource-category">{{ resource.category }}</span>
