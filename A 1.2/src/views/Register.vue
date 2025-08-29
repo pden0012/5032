@@ -5,22 +5,46 @@
     <form @submit.prevent="handleRegister">
       <div class="form-group">
         <label>Username:</label>
-        <input type="text" v-model="username" required>
+        <input 
+          type="text" 
+          v-model="username" 
+          @blur="() => validateUsername(true)"
+          @input="() => validateUsername(false)"
+        >
+        <div v-if="errors.username" class="text-danger">{{ errors.username }}</div>
       </div>
       
       <div class="form-group">
         <label>Email:</label>
-        <input type="email" v-model="email" required>
+        <input 
+          type="email" 
+          v-model="email" 
+          @blur="() => validateEmail(true)"
+          @input="() => validateEmail(false)"
+        >
+        <div v-if="errors.email" class="text-danger">{{ errors.email }}</div>
       </div>
       
       <div class="form-group">
         <label>Password:</label>
-        <input type="password" v-model="password" required>
+        <input 
+          type="password" 
+          v-model="password" 
+          @blur="() => validatePassword(true)"
+          @input="() => validatePassword(false)"
+        >
+        <div v-if="errors.password" class="text-danger">{{ errors.password }}</div>
       </div>
       
       <div class="form-group">
         <label>Confirm Password:</label>
-        <input type="password" v-model="confirmPassword" required>
+        <input 
+          type="password" 
+          v-model="confirmPassword" 
+          @blur="() => validateConfirmPassword(true)"
+          @input="() => validateConfirmPassword(false)"
+        >
+        <div v-if="errors.confirmPassword" class="text-danger">{{ errors.confirmPassword }}</div>
       </div>
       
       <button type="submit">Register</button>
@@ -40,16 +64,75 @@ export default {
     const password = ref('')
     const confirmPassword = ref('')
     
-    // register function
-    const handleRegister = () => {
-      console.log('Register attempt:', username.value)
+    // errors object for validation
+    const errors = ref({
+      username: null,
+      email: null,
+      password: null,
+      confirmPassword: null
+    })
+    
+    // validation functions
+    const validateUsername = (blur) => {
+      if (username.value.length < 3) {
+        if (blur) errors.value.username = "Username must be at least 3 characters."
+      } else {
+        errors.value.username = null
+      }
     }
     
+    const validateEmail = (blur) => {
+      // This is email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(email.value)) {
+        if (blur) errors.value.email = "Please enter a valid email address"
+      } else {
+        errors.value.email = null
+      }
+    }
+    
+    const validatePassword = (blur) => {
+      // 密码6-10位验证
+      // This is password validation
+      // the password must be between 6-10 characters
+      if (password.value.length < 6 || password.value.length > 10) {
+        if (blur) errors.value.password = "Password must be between 6-10 characters"
+      } else {
+        errors.value.password = null
+      }
+    }
+    
+    const validateConfirmPassword = (blur) => {
+      // This is confirm password validation      
+      // This is confirm password validation
+      if (password.value !== confirmPassword.value) {
+        if (blur) errors.value.confirmPassword = "Passwords do not match"
+      } else {
+        errors.value.confirmPassword = null
+      }
+    }
+    
+    // register function with validation
+    const handleRegister = () => {
+      // validate all fields
+      validateUsername(true)
+      validateEmail(true)
+      validatePassword(true)
+      validateConfirmPassword(true)
+      
+      // check if there are any errors
+      if (!errors.value.username && !errors.value.email && 
+          !errors.value.password && !errors.value.confirmPassword) {
+        console.log('Register attempt:', username.value)
+      }
+    }
+    // return the data and functions
     return {
       username,
       email,
       password,
       confirmPassword,
+      errors,
       handleRegister
     }
   }
@@ -94,6 +177,12 @@ export default {
   outline: none;
   border-color: #3498db;
   box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.text-danger {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
 }
 
 button {
